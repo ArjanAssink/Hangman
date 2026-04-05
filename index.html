@@ -713,8 +713,8 @@ const SFX = (() => {
 
 let currentWord     = '';
 let currentHint     = '';
-let guessedKeys     = new Set();   // button key strings that have been pressed
-let guessedLetters  = new Set();   // individual uppercase letters revealed
+let guessedKeys       = new Set();  // button key strings that have been pressed
+let revealedPositions = new Set();  // word-index positions that have been revealed
 let wrongCount      = 0;
 let score           = 0;
 let gameActive      = false;
@@ -888,15 +888,13 @@ function buildWordDisplay() {
     }
 }
 
-function revealLetters(letter) {
-    [...currentWord].forEach((l, i) => {
-        if (l !== letter) return;
-        const box = document.getElementById(`lb-${i}`);
-        box.textContent = letter;
-        box.classList.remove('pop-in');
-        void box.offsetWidth; // reflow to restart animation
-        box.classList.add('pop-in');
-    });
+function revealPosition(i) {
+    revealedPositions.add(i);
+    const box = document.getElementById(`lb-${i}`);
+    box.textContent = currentWord[i];
+    box.classList.remove('pop-in');
+    void box.offsetWidth;
+    box.classList.add('pop-in');
 }
 
 function revealAllLetters() {
@@ -918,8 +916,8 @@ function showHint() {
 function newGame() {
     hideOverlay();
     gameActive     = true;
-    guessedKeys    = new Set();
-    guessedLetters = new Set();
+    guessedKeys       = new Set();
+    revealedPositions = new Set();
     wrongCount     = 0;
 
     // Pick a word not recently used
@@ -950,22 +948,38 @@ function guess(keyValue) {
     const keyBtn = document.getElementById('key-' + keyValue);
     if (keyBtn) keyBtn.disabled = true;
 
-    // Unique uppercase letters this key represents
-    const letters = [...new Set([...keyValue.toUpperCase()])];
+    const upperKey = keyValue.toUpperCase();
+    const clusters = findClusters(currentWord);
 
-    // Any of this key's letters present in the word?
-    const anyCorrect = letters.some(l => currentWord.includes(l));
+    // Map every word position to its cluster index (-1 = standalone)
+    const clusterOf = new Array(currentWord.length).fill(-1);
+    clusters.forEach((c, ci) => {
+        for (let j = c.start; j <= c.end; j++) clusterOf[j] = ci;
+    });
 
-    // Add all letters to guessed set
-    letters.forEach(l => guessedLetters.add(l));
+    // Determine which positions this key reveals:
+    // - multi-char key: positions belonging to a cluster whose text matches the key exactly
+    // - single-char key: positions where that letter sits standalone (not inside any cluster)
+    const positions = [];
+    if (upperKey.length > 1) {
+        clusters.forEach(c => {
+            if (currentWord.slice(c.start, c.end + 1) === upperKey) {
+                for (let j = c.start; j <= c.end; j++) positions.push(j);
+            }
+        });
+    } else {
+        [...currentWord].forEach((l, j) => {
+            if (l === upperKey && clusterOf[j] === -1) positions.push(j);
+        });
+    }
 
-    if (anyCorrect) {
+    if (positions.length > 0) {
         if (keyBtn) keyBtn.classList.add('correct');
-        letters.forEach(l => revealLetters(l));
+        positions.forEach(i => revealPosition(i));
         SFX.correct();
 
-        // Win check: every letter in word has been guessed
-        if ([...currentWord].every(l => guessedLetters.has(l))) {
+        // Win check: all positions in the word revealed
+        if ([...currentWord].every((_, i) => revealedPositions.has(i))) {
             gameActive = false;
             score++;
             setTimeout(() => showOverlay('win'), 500);
@@ -976,8 +990,10 @@ function guess(keyValue) {
         wrongCount++;
         popNextBalloon();
 
-        const wrongKeys = [...guessedKeys]
-            .filter(k => ![...new Set([...k.toUpperCase()])].some(l => currentWord.includes(l)));
+        const wrongKeys = [...guessedKeys].filter(k => {
+            const btn = document.getElementById('key-' + k);
+            return btn && btn.classList.contains('wrong');
+        });
         document.getElementById('wrongLetters').textContent = wrongKeys.join('  ');
 
         if (wrongCount >= MAX_WRONG) {
