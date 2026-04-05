@@ -65,6 +65,12 @@
             flex-shrink: 0;
         }
 
+        .hint-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
         .hint-btn {
             background: rgba(255,255,255,0.85);
             border: 2px solid #FFD93D;
@@ -82,6 +88,25 @@
         .hint-btn:active {
             transform: translateY(2px);
             box-shadow: 0 1px 0 #E6B800;
+        }
+
+        .skip-btn {
+            background: rgba(255,255,255,0.85);
+            border: 2px solid #FF9B9B;
+            border-radius: 20px;
+            padding: 8px 20px;
+            font-size: clamp(14px, 2.2vw, 18px);
+            font-weight: bold;
+            color: #C0392B;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #E57373;
+            transition: transform 0.1s, box-shadow 0.1s;
+            touch-action: manipulation;
+        }
+
+        .skip-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #E57373;
         }
 
         .hint-box {
@@ -419,7 +444,10 @@
 </header>
 
 <div class="hint-area">
-    <button class="hint-btn" id="hintBtn" onclick="showHint()">💡 Hint?</button>
+    <div class="hint-row">
+        <button class="hint-btn" id="hintBtn" onclick="showHint()">💡 Hint?</button>
+        <button class="skip-btn" onclick="newGame()">🔄 Nieuw woord</button>
+    </div>
     <div class="hint-box" id="hintBox"></div>
 </div>
 

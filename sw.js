@@ -1,4 +1,4 @@
-const CACHE = 'woord-raden-v3';
+const CACHE = 'woord-raden-v4';
 const ASSETS = [
     './',
     './index.html',
