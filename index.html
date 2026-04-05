@@ -107,6 +107,7 @@
             display: flex;
             gap: clamp(5px, 1.5vw, 12px);
             justify-content: center;
+            align-items: flex-end;
             flex-wrap: wrap;
             padding: 8px 16px;
             flex-shrink: 0;
@@ -123,6 +124,18 @@
             font-size: clamp(20px, 4.5vw, 40px);
             font-weight: bold;
             color: #2C3E50;
+        }
+
+        /* Cluster wrapper: draws a single connected underline for the vowel group */
+        .cluster-wrap {
+            display: inline-flex;
+            gap: clamp(5px, 1.5vw, 12px);
+            border-bottom: 4px solid #FF6B6B;
+            border-radius: 0 0 5px 5px;
+        }
+
+        .letter-box.in-cluster {
+            border-bottom: none;
         }
 
         .letter-box.pop-in {
@@ -614,6 +627,88 @@ const BALLOON_COLORS = [
 
 const MAX_WRONG = 20;
 
+// ─── AUDIO ENGINE ─────────────────────────────────────────────────────────────
+
+const SFX = (() => {
+    let ctx = null;
+
+    function ac() {
+        if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (ctx.state === 'suspended') ctx.resume();
+        return ctx;
+    }
+
+    function tone(hz, type, t0, dur, vol = 0.28) {
+        const c = ac(), osc = c.createOscillator(), g = c.createGain();
+        osc.connect(g); g.connect(c.destination);
+        osc.type = type;
+        osc.frequency.setValueAtTime(hz, t0);
+        g.gain.setValueAtTime(0, t0);
+        g.gain.linearRampToValueAtTime(vol, t0 + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+        osc.start(t0); osc.stop(t0 + dur + 0.02);
+    }
+
+    function noiseBurst(t0, dur, vol) {
+        const c = ac();
+        const buf = c.createBuffer(1, c.sampleRate * dur, c.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+        const src = c.createBufferSource(); src.buffer = buf;
+        const filt = c.createBiquadFilter();
+        filt.type = 'bandpass';
+        filt.frequency.setValueAtTime(900, t0);
+        filt.frequency.exponentialRampToValueAtTime(200, t0 + dur);
+        filt.Q.value = 0.7;
+        const g = c.createGain();
+        g.gain.setValueAtTime(vol, t0);
+        g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+        src.connect(filt); filt.connect(g); g.connect(c.destination);
+        src.start(t0);
+    }
+
+    return {
+        // Two ascending notes — bright & happy
+        correct() {
+            const t = ac().currentTime;
+            tone(659, 'sine', t,        0.14, 0.28);   // E5
+            tone(784, 'sine', t + 0.11, 0.20, 0.28);   // G5
+        },
+
+        // Soft descending boop — gentle, not harsh
+        wrong() {
+            const c = ac(), t = c.currentTime;
+            const osc = c.createOscillator(), g = c.createGain();
+            osc.connect(g); g.connect(c.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(330, t);
+            osc.frequency.exponentialRampToValueAtTime(160, t + 0.38);
+            g.gain.setValueAtTime(0.22, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.42);
+            osc.start(t); osc.stop(t + 0.44);
+        },
+
+        // Short noise burst — balloon pop
+        pop() { noiseBurst(ac().currentTime, 0.12, 0.5); },
+
+        // 5-note triumphant fanfare: C E G C' E'
+        win() {
+            const t = ac().currentTime;
+            [523, 659, 784, 1047, 1319].forEach((hz, i) => {
+                tone(hz, 'sine', t + i * 0.14, i === 4 ? 0.55 : 0.22, 0.32);
+            });
+        },
+
+        // Welcoming G-major arpeggio on first interaction
+        startup() {
+            const t = ac().currentTime;
+            [392, 494, 587, 784].forEach((hz, i) => {   // G B D G'
+                tone(hz, 'sine', t + i * 0.19, 0.35, 0.22);
+            });
+        },
+    };
+})();
+
 // ─── STATE ────────────────────────────────────────────────────────────────────
 
 let currentWord     = '';
@@ -632,6 +727,7 @@ function init() {
     buildKeyboard();
     newGame();
     document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('pointerdown', () => SFX.startup(), { once: true });
 }
 
 // ─── KEYBOARD ─────────────────────────────────────────────────────────────────
@@ -712,6 +808,7 @@ function popNextBalloon() {
 
     const target = remaining[remaining.length - 1];
     target.classList.add('popped');
+    SFX.pop();
 
     setTimeout(() => {
         target.style.visibility = 'hidden';
@@ -732,15 +829,63 @@ function updateBalloonLabel(count) {
 
 // ─── WORD DISPLAY ─────────────────────────────────────────────────────────────
 
+// Returns array of {start, end} for each vowel cluster in the word (longest match first)
+function findClusters(word) {
+    const PATTERNS = [
+        'EEUW','IEUW',
+        'AAI','OOI','OEI','OUW','AUW','EEU','IEU','EAU',
+        'AA','EE','OO','UU','IE','OE','UI','EU','IJ','EI','OU','AU',
+    ];
+    const clusters = [];
+    let i = 0;
+    while (i < word.length) {
+        let matched = false;
+        for (const p of PATTERNS) {
+            if (word.startsWith(p, i) && p.length > 1) {
+                clusters.push({ start: i, end: i + p.length - 1 });
+                i += p.length;
+                matched = true;
+                break;
+            }
+        }
+        if (!matched) i++;
+    }
+    return clusters;
+}
+
 function buildWordDisplay() {
     const display = document.getElementById('wordDisplay');
     display.innerHTML = '';
-    [...currentWord].forEach((_, i) => {
-        const box = document.createElement('div');
-        box.className = 'letter-box';
-        box.id = `lb-${i}`;
-        display.appendChild(box);
+
+    const clusters = findClusters(currentWord);
+    // Build a map: letterIndex → cluster index (or -1)
+    const clusterOf = new Array(currentWord.length).fill(-1);
+    clusters.forEach((c, ci) => {
+        for (let i = c.start; i <= c.end; i++) clusterOf[i] = ci;
     });
+
+    function makeBox(i) {
+        const box = document.createElement('div');
+        box.className = 'letter-box' + (clusterOf[i] >= 0 ? ' in-cluster' : '');
+        box.id = `lb-${i}`;
+        return box;
+    }
+
+    let i = 0;
+    while (i < currentWord.length) {
+        if (clusterOf[i] >= 0) {
+            const ci = clusterOf[i];
+            const { start, end } = clusters[ci];
+            const wrap = document.createElement('div');
+            wrap.className = 'cluster-wrap';
+            for (let j = start; j <= end; j++) wrap.appendChild(makeBox(j));
+            display.appendChild(wrap);
+            i = end + 1;
+        } else {
+            display.appendChild(makeBox(i));
+            i++;
+        }
+    }
 }
 
 function revealLetters(letter) {
@@ -817,6 +962,7 @@ function guess(keyValue) {
     if (anyCorrect) {
         if (keyBtn) keyBtn.classList.add('correct');
         letters.forEach(l => revealLetters(l));
+        SFX.correct();
 
         // Win check: every letter in word has been guessed
         if ([...currentWord].every(l => guessedLetters.has(l))) {
@@ -826,6 +972,7 @@ function guess(keyValue) {
         }
     } else {
         if (keyBtn) keyBtn.classList.add('wrong');
+        SFX.wrong();
         wrongCount++;
         popNextBalloon();
 
@@ -844,6 +991,8 @@ function guess(keyValue) {
 // ─── OVERLAY ──────────────────────────────────────────────────────────────────
 
 function showOverlay(result) {
+    if (result === 'win') SFX.win();
+
     const overlay = document.getElementById('overlay');
     overlay.className = 'overlay visible ' + result;
 
