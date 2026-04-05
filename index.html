@@ -198,58 +198,79 @@
         /* ── KEYBOARD ── */
         .keyboard {
             width: 100%;
-            max-width: 820px;
-            padding: clamp(6px, 1.5vw, 12px) clamp(4px, 1vw, 10px);
+            max-width: 900px;
+            padding: clamp(4px, 1vw, 8px) clamp(4px, 1vw, 10px);
             display: flex;
             flex-direction: column;
-            gap: clamp(5px, 1vw, 8px);
-            align-items: center;
+            gap: clamp(2px, 0.5vw, 5px);
+            align-items: stretch;
             margin-top: auto;
             flex-shrink: 0;
+            overflow-y: auto;
+        }
+
+        .keyboard-category {
+            display: flex;
+            align-items: flex-start;
+            gap: clamp(4px, 0.8vw, 8px);
+        }
+
+        .keyboard-category-label {
+            font-size: clamp(9px, 1.3vw, 13px);
+            color: #2C7BB6;
+            font-weight: bold;
+            white-space: nowrap;
+            min-width: clamp(60px, 10vw, 110px);
+            padding-top: clamp(10px, 1.8vh, 14px);
+            flex-shrink: 0;
+            text-align: right;
         }
 
         .keyboard-row {
             display: flex;
-            gap: clamp(4px, 0.8vw, 7px);
-            justify-content: center;
+            gap: clamp(3px, 0.6vw, 6px);
+            justify-content: flex-start;
+            flex-wrap: wrap;
         }
 
         .key {
-            width: clamp(44px, 8.8vw, 72px);
-            height: clamp(48px, 7.5vh, 66px);
+            min-width: clamp(36px, 6vw, 54px);
+            height: clamp(40px, 6vh, 56px);
+            padding: 0 clamp(5px, 1vw, 10px);
             background: white;
             border: 2px solid #D0D0D0;
-            border-radius: 12px;
-            font-size: clamp(17px, 3vw, 26px);
+            border-radius: 10px;
+            font-size: clamp(13px, 2.2vw, 20px);
             font-weight: bold;
             color: #333;
             cursor: pointer;
-            box-shadow: 0 4px 0 #BDBDBD;
+            box-shadow: 0 3px 0 #BDBDBD;
             transition: transform 0.1s, box-shadow 0.1s, background 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
             touch-action: manipulation;
             -webkit-user-select: none;
+            white-space: nowrap;
         }
 
         .key:active:not(:disabled) {
             transform: translateY(3px);
-            box-shadow: 0 1px 0 #BDBDBD;
+            box-shadow: 0 0px 0 #BDBDBD;
         }
 
         .key.correct {
             background: #6BCB77;
             border-color: #43A047;
             color: white;
-            box-shadow: 0 4px 0 #2E7D32;
+            box-shadow: 0 3px 0 #2E7D32;
         }
 
         .key.wrong {
             background: #EF9A9A;
             border-color: #E53935;
             color: #c62828;
-            box-shadow: 0 4px 0 #b71c1c;
+            box-shadow: 0 3px 0 #b71c1c;
             opacity: 0.65;
         }
 
@@ -394,10 +415,13 @@ const WORDS = [
 // Filter to 8-9 letters only (nice sweet spot for kids)
 const PLAY_WORDS = WORDS.filter(w => w.word.length >= 8 && w.word.length <= 10);
 
-const KEYBOARD_ROWS = [
-    ['Q','W','E','R','T','Y','U','I','O','P'],
-    ['A','S','D','F','G','H','J','K','L'],
-    ['Z','X','C','V','B','N','M'],
+const KEYBOARD_CATEGORIES = [
+    { name: 'Korte klanken',      keys: ['a','e','o','u','i'] },
+    { name: 'Lange klanken',      keys: ['aa','ee','oo','uu'] },
+    { name: 'Twee teken klanken', keys: ['ei','ij','ie','au','ou','oe','eu','ui','uw','ch','ng','nk'] },
+    { name: 'Drie teken klanken', keys: ['aai','ooi','oei','auw','ouw'] },
+    { name: 'Vier teken klanken', keys: ['eeuw','ieuw'] },
+    { name: 'Medeklinkers',       keys: ['b','d','f','g','h','j','k','l','m','n','p','r','s','t','v','w','z'] },
 ];
 
 const BALLOON_COLORS = [
@@ -427,14 +451,15 @@ const MAX_WRONG = 20;
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 
-let currentWord   = '';
-let currentHint   = '';
-let guessed       = new Set();
-let wrongCount    = 0;
-let score         = 0;
-let gameActive    = false;
-let balloonWraps  = [];   // array of DOM elements, index 0 = leftmost
-let usedIndices   = [];
+let currentWord     = '';
+let currentHint     = '';
+let guessedKeys     = new Set();   // button key strings that have been pressed
+let guessedLetters  = new Set();   // individual uppercase letters revealed
+let wrongCount      = 0;
+let score           = 0;
+let gameActive      = false;
+let balloonWraps    = [];   // array of DOM elements, index 0 = leftmost
+let usedIndices     = [];
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 
@@ -449,18 +474,27 @@ function init() {
 function buildKeyboard() {
     const kb = document.getElementById('keyboard');
     kb.innerHTML = '';
-    KEYBOARD_ROWS.forEach(row => {
+    KEYBOARD_CATEGORIES.forEach(({ name, keys }) => {
+        const catEl = document.createElement('div');
+        catEl.className = 'keyboard-category';
+
+        const labelEl = document.createElement('div');
+        labelEl.className = 'keyboard-category-label';
+        labelEl.textContent = name;
+        catEl.appendChild(labelEl);
+
         const rowEl = document.createElement('div');
         rowEl.className = 'keyboard-row';
-        row.forEach(letter => {
+        keys.forEach(k => {
             const btn = document.createElement('button');
             btn.className = 'key';
-            btn.id = 'key-' + letter;
-            btn.textContent = letter;
-            btn.addEventListener('click', () => guess(letter));
+            btn.id = 'key-' + k;
+            btn.textContent = k;
+            btn.addEventListener('click', () => guess(k));
             rowEl.appendChild(btn);
         });
-        kb.appendChild(rowEl);
+        catEl.appendChild(rowEl);
+        kb.appendChild(catEl);
     });
 }
 
@@ -472,8 +506,8 @@ function resetKeyboard() {
 }
 
 function onKeyDown(e) {
-    const letter = e.key.toUpperCase();
-    if (/^[A-Z]$/.test(letter)) guess(letter);
+    const letter = e.key.toLowerCase();
+    if (/^[a-z]$/.test(letter)) guess(letter);
 }
 
 // ─── BALLOONS ─────────────────────────────────────────────────────────────────
@@ -566,9 +600,10 @@ function revealAllLetters() {
 
 function newGame() {
     hideOverlay();
-    gameActive = true;
-    guessed    = new Set();
-    wrongCount = 0;
+    gameActive     = true;
+    guessedKeys    = new Set();
+    guessedLetters = new Set();
+    wrongCount     = 0;
 
     // Pick a word not recently used
     if (usedIndices.length >= PLAY_WORDS.length) usedIndices = [];
@@ -589,31 +624,40 @@ function newGame() {
     resetKeyboard();
 }
 
-function guess(letter) {
-    if (!gameActive || guessed.has(letter)) return;
-    guessed.add(letter);
+function guess(keyValue) {
+    if (!gameActive || guessedKeys.has(keyValue)) return;
+    guessedKeys.add(keyValue);
 
-    const keyBtn = document.getElementById('key-' + letter);
-    if (!keyBtn) return;
-    keyBtn.disabled = true;
+    const keyBtn = document.getElementById('key-' + keyValue);
+    if (keyBtn) keyBtn.disabled = true;
 
-    if (currentWord.includes(letter)) {
-        keyBtn.classList.add('correct');
-        revealLetters(letter);
+    // Unique uppercase letters this key represents
+    const letters = [...new Set([...keyValue.toUpperCase()])];
 
-        // Win check
-        if ([...currentWord].every(l => guessed.has(l))) {
+    // Any of this key's letters present in the word?
+    const anyCorrect = letters.some(l => currentWord.includes(l));
+
+    // Add all letters to guessed set
+    letters.forEach(l => guessedLetters.add(l));
+
+    if (anyCorrect) {
+        if (keyBtn) keyBtn.classList.add('correct');
+        letters.forEach(l => revealLetters(l));
+
+        // Win check: every letter in word has been guessed
+        if ([...currentWord].every(l => guessedLetters.has(l))) {
             gameActive = false;
             score++;
             setTimeout(() => showOverlay('win'), 500);
         }
     } else {
-        keyBtn.classList.add('wrong');
+        if (keyBtn) keyBtn.classList.add('wrong');
         wrongCount++;
         popNextBalloon();
 
-        const wrongs = [...guessed].filter(l => !currentWord.includes(l)).join('  ');
-        document.getElementById('wrongLetters').textContent = wrongs;
+        const wrongKeys = [...guessedKeys]
+            .filter(k => ![...new Set([...k.toUpperCase()])].some(l => currentWord.includes(l)));
+        document.getElementById('wrongLetters').textContent = wrongKeys.join('  ');
 
         if (wrongCount >= MAX_WRONG) {
             gameActive = false;
