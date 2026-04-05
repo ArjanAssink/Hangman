@@ -435,177 +435,147 @@
 <script>
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
+// Alle woorden bevatten lange klanken (aa/ee/oo/uu of open lettergreep)
+// en/of twee-, drie- of vierletterklanken (ie/oe/ui/eu/ij/ei/ou/au/aai/ooi/eeu/eeuw)
 const WORDS = [
-    // ── Dieren ──
-    { word: 'KROKODIL',   hint: 'Groen dier met een enorme bek 🐊' },
-    { word: 'NEUSHOORN',  hint: 'Groot dier met een hoorn op zijn neus 🦏' },
-    { word: 'SCHILDPAD',  hint: 'Dier met een hard schild op zijn rug 🐢' },
-    { word: 'VLEERMUIS',  hint: 'Klein dier dat \'s nachts vliegt 🦇' },
-    { word: 'OLIFANTEN',  hint: 'Grote grijze dieren met een lange slurf 🐘' },
-    { word: 'DOLFIJNEN',  hint: 'Slimme dieren die in de zee springen 🐬' },
-    { word: 'WALVISSEN',  hint: 'Grootste dieren ter wereld in de zee 🐋' },
-    { word: 'ZEELEEUW',   hint: 'Dier dat zowel in water als op land leeft 🦭' },
-    { word: 'ZEEPAARDJE', hint: 'Klein zeediertje dat rechtop zwemt 🐡' },
-    { word: 'SPRINKHAAN', hint: 'Insect dat heel hoog kan springen 🦗' },
-    { word: 'VLINDERTJE', hint: 'Kleurrijk vliegend insect 🦋' },
-    { word: 'PAPEGAAI',   hint: 'Kleurrijke vogel die mensen kan napraten 🦜' },
-    { word: 'DIERENTUIN', hint: 'Plek waar je veel dieren kunt zien 🦁' },
-    { word: 'DIERENARTS', hint: 'Dokter voor zieke dieren 🩺' },
-    { word: 'DINOSAURUS', hint: 'Uitgestorven groot dier van vroeger 🦕' },
-    { word: 'VOGELKOOI',  hint: 'Kooi waar een vogel in woont 🐦' },
-    { word: 'VOGELNEST',  hint: 'Nestje van takjes waar een vogel in broedt 🐣' },
-    { word: 'GOUDVISSEN', hint: 'Oranje visjes in een kom of vijver 🐠' },
-    { word: 'REGENWORM',  hint: 'Roze worm die in de aarde leeft 🪱' },
-    { word: 'MIERENHOOP', hint: 'Huis van mieren in de grond 🐜' },
-    { word: 'VLINDERNET', hint: 'Net om vlinders mee te vangen 🦋' },
-    { word: 'VUURVLIEG',  hint: 'Klein insect dat \'s nachts licht geeft ✨' },
+    // ── Dieren ──  (tweeletterklanken: eu,oo / ee,ui / ij / ee,eeu★ / ee,aa / aa / aai★★ / ie,ui / ie / au / oo,ooi★★ / ou / ie,oo / uu,ie)
+    { word: 'NEUSHOORN',  hint: 'Groot dier met een hoorn op zijn neus 🦏' },          // eu + oo
+    { word: 'VLEERMUIS',  hint: 'Klein dier dat \'s nachts vliegt 🦇' },              // ee + ui
+    { word: 'DOLFIJNEN',  hint: 'Slimme dieren die in de zee springen 🐬' },          // ij
+    { word: 'ZEELEEUW',   hint: 'Dier dat zowel in water als op land leeft 🦭' },     // ee + eeu (drieletter)
+    { word: 'ZEEPAARDJE', hint: 'Klein zeediertje dat rechtop zwemt 🐡' },            // ee + aa
+    { word: 'SPRINKHAAN', hint: 'Insect dat heel hoog kan springen 🦗' },             // aa
+    { word: 'PAPEGAAI',   hint: 'Kleurrijke vogel die mensen kan napraten 🦜' },      // aai (drieletter)
+    { word: 'DIERENTUIN', hint: 'Plek waar je veel dieren kunt zien 🦁' },            // ie + ui
+    { word: 'DIERENARTS', hint: 'Dokter voor zieke dieren 🩺' },                      // ie
+    { word: 'DINOSAURUS', hint: 'Uitgestorven groot dier van vroeger 🦕' },           // au
+    { word: 'VOGELKOOI',  hint: 'Kooi waar een vogel in woont 🐦' },                  // oo + ooi (drieletter)
+    { word: 'GOUDVISSEN', hint: 'Oranje visjes in een kom of vijver 🐠' },            // ou
+    { word: 'MIERENHOOP', hint: 'Huis van mieren in de grond 🐜' },                   // ie + oo
+    { word: 'VUURVLIEG',  hint: 'Klein insect dat \'s nachts licht geeft ✨' },       // uu + ie
+    { word: 'OOIEVAAR',   hint: 'Grote witte vogel met lange rode poten 🐦' },        // ooi (drieletter) + aa
+    { word: 'ZEEHONDJE',  hint: 'Schattig dier dat op rotsen bij de zee leeft 🦭' },  // ee
+    { word: 'IJSBEERTJE', hint: 'Grote witte beer die leeft op het ijs 🐻‍❄️' },     // ij + ee
     // ── Eten & Drinken ──
-    { word: 'CHOCOLADE',  hint: 'Lekker zoet en bruin 🍫' },
-    { word: 'AARDAPPEL',  hint: 'Groeit in de grond, voor friet 🥔' },
-    { word: 'BOTERKOEK',  hint: 'Lekker koekje van de bakker 🍪' },
-    { word: 'PANNENKOEK', hint: 'Platte ronde lekkernij gebakken in de pan 🥞' },
-    { word: 'AARDBEIEN',  hint: 'Rode zoete vruchten in de tuin 🍓' },
-    { word: 'APPELSAP',   hint: 'Lekker drankje gemaakt van appels 🍎' },
-    { word: 'LIMONADE',   hint: 'Zoet drankje met bubbels 🥤' },
-    { word: 'FRISDRANK',  hint: 'Koolzuurhoudend zoet drankje 🧃' },
-    { word: 'CITROENSAP', hint: 'Zuur sap van een gele vrucht 🍋' },
-    { word: 'SLAGROOM',   hint: 'Opgeklopte room voor op je taart 🍰' },
-    { word: 'ROZIJNEN',   hint: 'Gedroogde druiven in het brood 🍇' },
-    { word: 'IJSCOUPE',   hint: 'Lekker nagerecht van ijs in een glas 🍨' },
-    { word: 'HAGELSLAG',  hint: 'Lekker chocoladestrooisel op je boterham 🍫' },
-    { word: 'PINDAKAAS',  hint: 'Romige pasta van pinda\'s op brood 🥜' },
-    { word: 'OLIEBOLLEN', hint: 'Ronde gefrituurde ballen met rozijnen 🍩' },
-    { word: 'SUIKERSPIN', hint: 'Zoete roze wol van suiker op een stokje 🍭' },
-    { word: 'SPECULAAS',  hint: 'Krokant kruidkoekje van de bakker 🍪' },
-    { word: 'IJSLOLLIE',  hint: 'Bevroren fruitig snoepje op een stokje 🍡' },
-    { word: 'WATERIJSJE', hint: 'Koud bevroren drankje op een stokje 🧊' },
-    { word: 'SNOEPGOED',  hint: 'Lekkers zoals snoepjes en chocolade 🍬' },
-    { word: 'BOERENKAAS', hint: 'Hollandse kaas gemaakt door een boer 🧀' },
+    { word: 'CHOCOLADE',  hint: 'Lekker zoet en bruin 🍫' },                          // open lettergrepen: cho-co-la-de
+    { word: 'AARDAPPEL',  hint: 'Groeit in de grond, voor friet 🥔' },               // aa
+    { word: 'BOTERKOEK',  hint: 'Lekker koekje van de bakker 🍪' },                   // oe
+    { word: 'PANNENKOEK', hint: 'Platte ronde lekkernij gebakken in de pan 🥞' },    // oe
+    { word: 'AARDBEIEN',  hint: 'Rode zoete vruchten in de tuin 🍓' },               // aa + ei
+    { word: 'LIMONADE',   hint: 'Zoet drankje met bubbels 🥤' },                      // open lettergrepen: li-mo-na-de
+    { word: 'CITROENSAP', hint: 'Zuur sap van een gele vrucht 🍋' },                 // oe
+    { word: 'SLAGROOM',   hint: 'Opgeklopte room voor op je taart 🍰' },             // oo
+    { word: 'ROZIJNEN',   hint: 'Gedroogde druiven in het brood 🍇' },               // ij
+    { word: 'IJSCOUPE',   hint: 'Lekker nagerecht van ijs in een glas 🍨' },         // ij + ou
+    { word: 'HAGELSLAG',  hint: 'Chocoladestrooisel op je boterham 🍫' },            // open lettergreep: ha-gel-slag
+    { word: 'PINDAKAAS',  hint: 'Romige pasta van pinda\'s op brood 🥜' },           // aa
+    { word: 'OLIEBOLLEN', hint: 'Ronde gefrituurde ballen met rozijnen 🍩' },        // ie
+    { word: 'SUIKERSPIN', hint: 'Zoete roze wol van suiker op een stokje 🍭' },      // ui
+    { word: 'SPECULAAS',  hint: 'Krokant kruidkoekje van de bakker 🍪' },            // aa
+    { word: 'IJSLOLLIE',  hint: 'Bevroren fruitig snoepje op een stokje 🍡' },       // ij
+    { word: 'WATERIJSJE', hint: 'Koud bevroren drankje op een stokje 🧊' },          // ij
+    { word: 'SNOEPGOED',  hint: 'Lekkers zoals snoepjes en chocolade 🍬' },          // oe
+    { word: 'BOERENKAAS', hint: 'Hollandse kaas gemaakt door een boer 🧀' },         // oe + aa
+    { word: 'STROOPKOEK', hint: 'Koek met stroop erop van de bakker 🍯' },           // oo + oe
     // ── Speelgoed & Spellen ──
-    { word: 'SPEELGOED',  hint: 'Artikelen om mee te spelen 🧸' },
-    { word: 'BASKETBAL',  hint: 'Sport waarbij je gooit naar een ring 🏀' },
-    { word: 'SPELLETJE',  hint: 'Leuk om te doen met vrienden 🎮' },
-    { word: 'SCHAAKBORD', hint: 'Zwart-wit bord voor een denkspel ♟️' },
-    { word: 'GANZENBORD', hint: 'Bordspel waarbij je met een gans vooruit loopt 🎲' },
-    { word: 'PUZZELSTUK', hint: 'Eén stukje van een grote puzzel 🧩' },
-    { word: 'TRAMPOLINE', hint: 'Je springt er hoog op omhoog 🤸' },
-    { word: 'SKATEBOARD', hint: 'Plankje op wieltjes om op te rijden 🛹' },
-    { word: 'VOETBALLEN', hint: 'Buiten spelen met een bal en twee doelen ⚽' },
-    { word: 'KAARTSPEL',  hint: 'Spel waarbij je met kaarten speelt 🃏' },
-    { word: 'STRANDBAL',  hint: 'Kleurrijke opblaasbare bal voor het strand 🏖️' },
-    { word: 'SPEELDOOS',  hint: 'Muziekdoosje dat speelt als je het opent 🎶' },
-    { word: 'POPPENHUIS', hint: 'Klein huisje voor poppen om in te spelen 🏠' },
-    { word: 'KNUFFELAAR', hint: 'Zacht speelgoedbeest om mee te knuffelen 🐻' },
-    { word: 'DRAAIMOLEN', hint: 'Kermisattractie waarbij je ronddraait op paardjes 🎠' },
-    { word: 'KATAPULT',   hint: 'Machine waarmee je dingen ver weg gooit 🏹' },
-    { word: 'TOVERBAL',   hint: 'Grote kleurrijke kauwgombal van de snoepwinkel 🔮' },
-    { word: 'BALLONNEN',  hint: 'Opblaasbare feestversiering 🎈' },
+    { word: 'SPEELGOED',  hint: 'Artikelen om mee te spelen 🧸' },                   // ee + oe
+    { word: 'SCHAAKBORD', hint: 'Zwart-wit bord voor een denkspel ♟️' },             // aa
+    { word: 'TRAMPOLINE', hint: 'Je springt er hoog op omhoog 🤸' },                  // open lettergrepen: tra-mpo-li-ne
+    { word: 'VOETBALLEN', hint: 'Buiten spelen met een bal en twee doelen ⚽' },     // oe
+    { word: 'KAARTSPEL',  hint: 'Spel waarbij je met kaarten speelt 🃏' },           // aa
+    { word: 'SPEELDOOS',  hint: 'Muziekdoosje dat speelt als je het opent 🎶' },     // ee + oo
+    { word: 'POPPENHUIS', hint: 'Klein huisje voor poppen om in te spelen 🏠' },     // ui
+    { word: 'KNUFFELAAR', hint: 'Zacht speelgoedbeest om mee te knuffelen 🐻' },     // aa
+    { word: 'DRAAIMOLEN', hint: 'Kermisattractie waarbij je ronddraait op paardjes 🎠' }, // aai (drieletter) + oo
+    { word: 'KATAPULT',   hint: 'Machine waarmee je dingen ver weg gooit 🏹' },      // open lettergrepen: ka-ta-pult
+    { word: 'HOELAHOEP',  hint: 'Ring die je om je middel laat draaien 🔵' },        // oe + oe
     // ── Natuur & Weer ──
-    { word: 'REGENBOOG',  hint: 'Zie je na de regen in de lucht 🌈' },
-    { word: 'ZONNEBLOEM', hint: 'Grote gele bloem die naar de zon draait 🌻' },
-    { word: 'SNEEUWMAN',  hint: 'Figuur gemaakt van sneeuw in de winter ☃️' },
-    { word: 'VUURWERK',   hint: 'Kleurrijke knallen aan de hemel bij feesten 🎆' },
-    { word: 'WATERVAL',   hint: 'Water dat van een hoge rots naar beneden valt 💧' },
-    { word: 'IJSPEGELS',  hint: 'Bevroren waterdruppels die omlaag hangen 🧊' },
-    { word: 'SNEEUWBAL',  hint: 'Bal van samengeperste sneeuw 🌨️' },
-    { word: 'KASTANJE',   hint: 'Bruine vrucht die in de herfst uit de boom valt 🌰' },
-    { word: 'IJSBLOEMEN', hint: 'Bevroren patronen op een koud raam ❄️' },
+    { word: 'REGENBOOG',  hint: 'Zie je na de regen in de lucht 🌈' },              // oo
+    { word: 'ZONNEBLOEM', hint: 'Grote gele bloem die naar de zon draait 🌻' },     // oe
+    { word: 'SNEEUWMAN',  hint: 'Figuur gemaakt van sneeuw in de winter ☃️' },      // ee + eeu (drieletter)
+    { word: 'VUURWERK',   hint: 'Kleurrijke knallen aan de hemel bij feesten 🎆' }, // uu
+    { word: 'SNEEUWBAL',  hint: 'Bal van samengeperste sneeuw 🌨️' },               // ee + eeu (drieletter)
+    { word: 'IJSBLOEMEN', hint: 'Bevroren patronen op een koud raam ❄️' },          // ij + oe
+    { word: 'SNEEUWVLOK', hint: 'Eén vlokje sneeuw dat uit de lucht valt ❄️' },     // eeu (drieletter) / eeuw (vierletter)
+    { word: 'WATERVAL',   hint: 'Water dat van een hoge rots naar beneden valt 💧' }, // open lettergreep: wa-ter-val
     // ── Voertuigen ──
-    { word: 'VLIEGTUIG',  hint: 'Vliegt hoog door de lucht ✈️' },
-    { word: 'HELIKOPTER', hint: 'Vliegtuig met ronddraaiende wieken 🚁' },
-    { word: 'SCHOOLBUS',  hint: 'Bus die kinderen naar school brengt 🚌' },
-    { word: 'MOTORFIETS', hint: 'Tweewielig voertuig met een motor 🏍️' },
-    { word: 'DRIEWIELER', hint: 'Fiets met drie wielen voor kleine kinderen 🛵' },
-    { word: 'DUIKBOOT',   hint: 'Boot die onder water kan rijden 🚢' },
-    { word: 'AMBULANCE',  hint: 'Wagen die snel naar ziekenhuizen rijdt 🚑' },
-    { word: 'VRACHTAUTO', hint: 'Grote auto die zware dingen vervoert 🚚' },
-    { word: 'TREINTJE',   hint: 'Klein treinnetje om mee te spelen 🚂' },
+    { word: 'VLIEGTUIG',  hint: 'Vliegt hoog door de lucht ✈️' },                   // ie + ui
+    { word: 'VLIEGVELD',  hint: 'Grote plek waar vliegtuigen landen en opstijgen ✈️' }, // ie
+    { word: 'HELIKOPTER', hint: 'Vliegtuig met ronddraaiende wieken 🚁' },           // open lettergrepen: he-li-kop-ter
+    { word: 'SCHOOLBUS',  hint: 'Bus die kinderen naar school brengt 🚌' },          // oo
+    { word: 'MOTORFIETS', hint: 'Tweewielig voertuig met een motor 🏍️' },           // ie
+    { word: 'DRIEWIELER', hint: 'Fiets met drie wielen voor kleine kinderen 🛵' },   // ie
+    { word: 'DUIKBOOT',   hint: 'Boot die onder water kan rijden 🚢' },              // ui + oo
+    { word: 'VRACHTAUTO', hint: 'Grote auto die zware dingen vervoert 🚚' },         // au
+    { word: 'TREINTJE',   hint: 'Klein treinnetje om mee te spelen 🚂' },            // ei
     // ── Plaatsen ──
-    { word: 'SPEELTUIN',  hint: 'Plek buiten met schommels en glijbanen 🛝' },
-    { word: 'BOERDERIJ',  hint: 'Plek waar boeren werken met dieren 🚜' },
-    { word: 'PRETPARK',   hint: 'Plek met achtbaan en attracties 🎡' },
-    { word: 'BIOSCOOP',   hint: 'Plek waar je films kijkt op groot scherm 🎬' },
-    { word: 'BAKKERIJ',   hint: 'Winkel waar vers brood wordt gebakken 🥐' },
-    { word: 'VISWINKEL',  hint: 'Winkel waar je vis kunt kopen 🐟' },
-    { word: 'ACHTBAAN',   hint: 'Snelle attractie die omhoog en omlaag gaat 🎢' },
-    { word: 'REUZENRAD',  hint: 'Groot draaiend rad bij de kermis 🎡' },
-    { word: 'SPEELKAMER', hint: 'Kamer in huis waar je mag spelen 🎠' },
-    { word: 'VUURTOREN',  hint: 'Hoge toren met een licht bij zee 🗼' },
-    { word: 'WOONKAMER',  hint: 'Kamer in huis om samen op de bank te zitten 🛋️' },
-    { word: 'SLAAPKAMER', hint: 'Kamer in huis waar je slaapt 🛏️' },
-    { word: 'KEUKENTJE',  hint: 'Kleine keuken om eten in te koken 🍳' },
+    { word: 'SPEELTUIN',  hint: 'Plek buiten met schommels en glijbanen 🛝' },      // ee + ui
+    { word: 'BOERDERIJ',  hint: 'Plek waar boeren werken met dieren 🚜' },          // oe + ij
+    { word: 'BIOSCOOP',   hint: 'Plek waar je films kijkt op groot scherm 🎬' },    // oo
+    { word: 'BAKKERIJ',   hint: 'Winkel waar vers brood wordt gebakken 🥐' },       // ij
+    { word: 'ACHTBAAN',   hint: 'Snelle attractie die omhoog en omlaag gaat 🎢' },  // aa
+    { word: 'REUZENRAD',  hint: 'Groot draaiend rad bij de kermis 🎡' },            // eu
+    { word: 'SPEELKAMER', hint: 'Kamer in huis waar je mag spelen 🎠' },            // ee
+    { word: 'VUURTOREN',  hint: 'Hoge toren met een licht bij zee 🗼' },            // uu + oo
+    { word: 'WOONKAMER',  hint: 'Kamer in huis om samen op de bank te zitten 🛋️' }, // oo
+    { word: 'SLAAPKAMER', hint: 'Kamer in huis waar je slaapt 🛏️' },               // aa
+    { word: 'KEUKENTJE',  hint: 'Kleine keuken om eten in te koken 🍳' },           // eu
+    { word: 'SPOORBAAN',  hint: 'Baan waarover de trein rijdt 🚂' },                // oo + aa
     // ── Thuis & School ──
-    { word: 'KOELKAST',   hint: 'Houdt je eten lekker koud ❄️' },
-    { word: 'TAFELKLEED', hint: 'Kleed dat op tafel ligt bij een feestje 🎊' },
-    { word: 'SLAAPZAK',   hint: 'Slaap er lekker warm in tijdens kamperen 🏕️' },
-    { word: 'SPAARPOT',   hint: 'Potje in de vorm van een varken voor muntjes 🐷' },
-    { word: 'TELEFOON',   hint: 'Apparaat om mee te bellen 📱' },
-    { word: 'COMPUTER',   hint: 'Apparaat om mee te spelen en te werken 💻' },
-    { word: 'TELEVISIE',  hint: 'Scherm waarop je films en tekenfilms ziet 📺' },
-    { word: 'SCHOOLTAS',  hint: 'Tas die je meeneemt naar school 🎒' },
-    { word: 'BOEKENTAS',  hint: 'Tas voor je boeken en schriften 📚' },
-    { word: 'BOEKENKAST', hint: 'Kast vol boeken om uit te lezen 📚' },
-    { word: 'KLEURBOEK',  hint: 'Boek met tekeningen om in te kleuren 🖍️' },
-    { word: 'SCHETSBOEK', hint: 'Boek om in te tekenen en te schetsen ✏️' },
-    { word: 'VERFKWAST',  hint: 'Kwastje om verf mee te schilderen 🖌️' },
-    { word: 'SCHILDERIJ', hint: 'Kunstwerk geschilderd op doek of papier 🖼️' },
-    { word: 'BLOKFLUIT',  hint: 'Muziekinstrument dat je blaast, populair op school 🎵' },
-    { word: 'XYLOFOON',   hint: 'Muziekinstrument met gekleurde blokjes die je slaat 🎶' },
-    { word: 'ACCORDEON',  hint: 'Muziekinstrument dat je uittrekt en induwt 🎵' },
-    { word: 'MUZIEKNOOT', hint: 'Symbool voor een klank in muziek 🎵' },
-    { word: 'MUZIEKLES',  hint: 'Les waarbij je een instrument leert bespelen 🎸' },
-    { word: 'TELESCOOP',  hint: 'Instrument om heel ver weg mee te kijken 🔭' },
-    { word: 'MICROSCOOP', hint: 'Instrument om kleine dingen mee te zien 🔬' },
-    // ── Kleding & Accessoires ──
-    { word: 'REGENJAS',   hint: 'Jas die je droog houdt in de regen ☔' },
-    { word: 'ZONNEBRIL',  hint: 'Bril die je ogen beschermt tegen de zon 😎' },
-    { word: 'ARMBANDJE',  hint: 'Sieraad dat je om je pols draagt 💜' },
-    { word: 'OORBELLEN',  hint: 'Sieraden die je in je oor draagt 💎' },
-    { word: 'WINTERJAS',  hint: 'Warme jas die je draagt in de koude winter 🧥' },
-    { word: 'RUGZAKJE',   hint: 'Klein rugzakje voor op een uitstap 🎒' },
-    { word: 'SLINGERS',   hint: 'Kleurrijke versieringen voor een feestje 🎉' },
+    { word: 'KOELKAST',   hint: 'Houdt je eten lekker koud ❄️' },                   // oe
+    { word: 'TAFELKLEED', hint: 'Kleed dat op tafel ligt bij een feestje 🎊' },     // ee
+    { word: 'SLAAPZAK',   hint: 'Slaap er lekker warm in tijdens kamperen 🏕️' },   // aa
+    { word: 'SPAARPOT',   hint: 'Potje in de vorm van een varken voor muntjes 🐷' }, // aa
+    { word: 'TELEFOON',   hint: 'Apparaat om mee te bellen 📱' },                   // ee + oo
+    { word: 'TELEVISIE',  hint: 'Scherm waarop je films en tekenfilms ziet 📺' },   // ie
+    { word: 'SCHOOLTAS',  hint: 'Tas die je meeneemt naar school 🎒' },             // oo
+    { word: 'BOEKENTAS',  hint: 'Tas voor je boeken en schriften 📚' },             // oe
+    { word: 'BOEKENKAST', hint: 'Kast vol boeken om uit te lezen 📚' },             // oe
+    { word: 'KLEURBOEK',  hint: 'Boek met tekeningen om in te kleuren 🖍️' },       // eu + oe
+    { word: 'SCHETSBOEK', hint: 'Boek om in te tekenen en te schetsen ✏️' },        // oe
+    { word: 'SCHILDERIJ', hint: 'Kunstwerk geschilderd op doek of papier 🖼️' },    // ij
+    { word: 'BLOKFLUIT',  hint: 'Muziekinstrument dat je blaast, populair op school 🎵' }, // ui
+    { word: 'XYLOFOON',   hint: 'Muziekinstrument met gekleurde blokjes die je slaat 🎶' }, // oo
+    { word: 'ACCORDEON',  hint: 'Muziekinstrument dat je uittrekt en induwt 🎵' },  // oe
+    { word: 'MUZIEKNOOT', hint: 'Symbool voor een klank in muziek 🎵' },            // ie + oo
+    { word: 'MUZIEKLES',  hint: 'Les waarbij je een instrument leert bespelen 🎸' }, // ie
+    { word: 'TELESCOOP',  hint: 'Instrument om heel ver weg mee te kijken 🔭' },    // ee + oo
+    { word: 'MICROSCOOP', hint: 'Instrument om kleine dingen mee te zien 🔬' },     // oo
+    { word: 'OORBELLEN',  hint: 'Sieraden die je in je oor draagt 💎' },            // oo
     // ── Fantasie & Avontuur ──
-    { word: 'AVONTUUR',   hint: 'Spannende beleving vol verrassingen 🗺️' },
-    { word: 'SPROOKJE',   hint: 'Verhaaltje over prinsen, prinsessen en draken 📖' },
-    { word: 'TOVENAAR',   hint: 'Iemand die magische trucs uithaalt 🧙' },
-    { word: 'TOVERSTAF',  hint: 'Staf waarmee een tovenaar magie doet ✨' },
-    { word: 'SCHATKIST',  hint: 'Kist vol goud en juwelen 💰' },
-    { word: 'SCHATKAART', hint: 'Kaart die de weg naar een schat wijst 🗺️' },
-    { word: 'ASTRONAUT',  hint: 'Iemand die naar de ruimte reist 👨‍🚀' },
-    { word: 'ZEEMEERMIN', hint: 'Wezen dat half mens, half vis is 🧜' },
-    { word: 'KONINKRIJK', hint: 'Land dat bestuurd wordt door een koning 👑' },
-    { word: 'EENHOORN',   hint: 'Magisch paard met een hoorn op zijn hoofd 🦄' },
-    { word: 'DROMENLAND', hint: 'Magisch land dat je bezoekt in je dromen 💤' },
-    { word: 'WONDERLAND', hint: 'Een wereld vol wonderen en magie ✨' },
-    { word: 'MAANLANDER', hint: 'Ruimtevoertuig dat op de maan landt 🌕' },
+    { word: 'AVONTUUR',   hint: 'Spannende beleving vol verrassingen 🗺️' },         // ou + uu
+    { word: 'SPROOKJE',   hint: 'Verhaaltje over prinsen, prinsessen en draken 📖' }, // oo
+    { word: 'TOVENAAR',   hint: 'Iemand die magische trucs uithaalt 🧙' },           // oo + aa
+    { word: 'TOVERSTAF',  hint: 'Staf waarmee een tovenaar magie doet ✨' },         // oo
+    { word: 'SCHATKAART', hint: 'Kaart die de weg naar een schat wijst 🗺️' },      // aa
+    { word: 'ASTRONAUT',  hint: 'Iemand die naar de ruimte reist 👨‍🚀' },          // au
+    { word: 'ZEEMEERMIN', hint: 'Wezen dat half mens, half vis is 🧜' },            // ee
+    { word: 'KONINKRIJK', hint: 'Land dat bestuurd wordt door een koning 👑' },     // ij
+    { word: 'EENHOORN',   hint: 'Magisch paard met een hoorn op zijn hoofd 🦄' },   // ee + oo
+    { word: 'DROMENLAND', hint: 'Magisch land dat je bezoekt in je dromen 💤' },    // open lettergreep: dro-men-land
+    { word: 'WONDERLAND', hint: 'Een wereld vol wonderen en magie ✨' },             // oo
+    { word: 'MAANLANDER', hint: 'Ruimtevoertuig dat op de maan landt 🌕' },         // aa
     // ── Circus & Vermaak ──
-    { word: 'GOOCHELAAR', hint: 'Iemand die je ogen voor de gek houdt met trucs 🎩' },
-    { word: 'ACROBAAT',   hint: 'Iemand die gevaarlijke kunstjes uitvoert 🤸' },
-    { word: 'CLOWNSNEUS', hint: 'Grote rode neus van een clown 🤡' },
-    { word: 'VUURSPUWER', hint: 'Iemand die vlammen spuwt in het circus 🔥' },
+    { word: 'GOOCHELAAR', hint: 'Iemand die je ogen voor de gek houdt met trucs 🎩' }, // oo + aa
+    { word: 'ACROBAAT',   hint: 'Iemand die gevaarlijke kunstjes uitvoert 🤸' },    // aa
+    { word: 'CLOWNSNEUS', hint: 'Grote rode neus van een clown 🤡' },               // ou + eu
+    { word: 'VUURSPUWER', hint: 'Iemand die vlammen spuwt in het circus 🔥' },      // uu
     // ── Feest & Seizoenen ──
-    { word: 'VERJAARDAG', hint: 'Dag waarop je jarig bent 🎂' },
-    { word: 'FEESTMUTS',  hint: 'Puntmuts die je draagt op een feestje 🥳' },
-    { word: 'CADEAUTJE',  hint: 'Iets dat je geeft of krijgt als verrassing 🎁' },
-    { word: 'KERSTBOOM',  hint: 'Versierde boom met lichtjes in de winter 🎄' },
-    { word: 'SCHAATSEN',  hint: 'Glijden over ijs met messen onder je schoenen ⛸️' },
-    { word: 'SLAAPLIED',  hint: 'Lied dat je zingt om in slaap te vallen 🎶' },
+    { word: 'VERJAARDAG', hint: 'Dag waarop je jarig bent 🎂' },                    // aa
+    { word: 'FEESTMUTS',  hint: 'Puntmuts die je draagt op een feestje 🥳' },       // ee
+    { word: 'CADEAUTJE',  hint: 'Iets dat je geeft of krijgt als verrassing 🎁' },  // eau (drieletter)
+    { word: 'KERSTBOOM',  hint: 'Versierde boom met lichtjes in de winter 🎄' },    // oo
+    { word: 'SCHAATSEN',  hint: 'Glijden over ijs met messen onder je schoenen ⛸️' }, // aa
+    { word: 'SLAAPLIED',  hint: 'Lied dat je zingt om in slaap te vallen 🎶' },     // aa + ie
     // ── Buiten & Sport ──
-    { word: 'ZOMERKAMP',  hint: 'Vakantieweek buiten met andere kinderen ⛺' },
-    { word: 'KAMPVUUR',   hint: 'Vuur dat je maakt bij het kamperen 🔥' },
-    { word: 'SURFPLANK',  hint: 'Plank om op golven mee te rijden 🏄' },
-    { word: 'ZWEMBADEN',  hint: 'Plaatsen waar je kunt zwemmen 🏊' },
-    { word: 'FIETSBAND',  hint: 'Zit rondom je fietswiel 🚲' },
-    { word: 'BRANDWEER',  hint: 'Mensen die branden blussen 🚒' },
-    { word: 'SCHOMMEL',   hint: 'Je slingert heen en weer op dit ding op de speeltuin 🌬️' },
-    { word: 'STRANDDAG',  hint: 'Dag dat je doorbrengt bij het strand en de zee 🏖️' },
-    { word: 'WATERKANON', hint: 'Groot apparaat dat water ver weg spuit 💦' },
-    { word: 'KAMPEERDER', hint: 'Iemand die buiten in een tent slaapt 🏕️' },
-    // ── Hygiëne & Thuis ──
-    { word: 'ZEEPBELLEN', hint: 'Ronde doorzichtige bellen van zeep 🫧' },
-    { word: 'BUBBELBAD',  hint: 'Heerlijk bad vol zeepbelletjes 🛁' },
-    { word: 'IJSKLONTJE', hint: 'Klein blokje bevroren water in je drankje 🧊' },
-    { word: 'EIERDOPJE',  hint: 'Dopje waar je een gekookt eitje in zet 🥚' },
+    { word: 'ZOMERKAMP',  hint: 'Vakantieweek buiten met andere kinderen ⛺' },     // open lettergreep: zo-mer-kamp
+    { word: 'KAMPVUUR',   hint: 'Vuur dat je maakt bij het kamperen 🔥' },          // uu
+    { word: 'FIETSBAND',  hint: 'Zit rondom je fietswiel 🚲' },                     // ie
+    { word: 'BRANDWEER',  hint: 'Mensen die branden blussen 🚒' },                  // ee
+    { word: 'KAMPEERDER', hint: 'Iemand die buiten in een tent slaapt 🏕️' },       // ee
+    { word: 'ZEEPBELLEN', hint: 'Ronde doorzichtige bellen van zeep 🫧' },          // ee
+    { word: 'IJSKLONTJE', hint: 'Klein blokje bevroren water in je drankje 🧊' },   // ij
+    { word: 'EIERDOPJE',  hint: 'Dopje waar je een gekookt eitje in zet 🥚' },      // ei + oe
 ];
 
 const PLAY_WORDS = WORDS;
